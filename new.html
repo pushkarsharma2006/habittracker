@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Habit Tracker</title>
+
+<style>
+:root {
+  --bg: #0f0f0f;
+  --header: #1f1f1f;
+  --cell: #111;
+  --done: #00c896;
+  --text: #ffffff;
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  text-align: center;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+input, button {
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 16px;
+}
+
+button {
+  background: var(--done);
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* TABLE LAYOUT */
+.wrapper {
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+}
+
+th, td {
+  border: 1px solid #333;
+  text-align: center;
+  padding: 10px;
+}
+
+th {
+  background: var(--header);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-size: 15px;
+}
+
+.date-col {
+  background: var(--header);
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  font-weight: bold;
+  font-size: 15px;
+  min-width: 80px;
+}
+
+.cell {
+  background: var(--cell);
+  cursor: pointer;
+  font-size: 20px;
+  min-width: 48px;
+  height: 48px;
+}
+
+.cell.done {
+  background: var(--done);
+  color: black;
+}
+
+/* MOBILE BOOST */
+@media (max-width: 768px) {
+
+  body {
+    padding: 12px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  input, button {
+    font-size: 18px;
+    padding: 16px;
+  }
+
+  th {
+    font-size: 16px;
+    padding: 12px 8px;
+  }
+
+  td {
+    padding: 14px 10px;
+  }
+
+  .date-col {
+    font-size: 16px;
+    min-width: 90px;
+  }
+
+  .cell {
+    font-size: 22px;
+    min-width: 56px;
+    height: 56px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>HABIT TRACKER</h1>
+
+<div class="controls">
+  <input id="habitInput" placeholder="New habit">
+  <button onclick="addHabit()">Add Habit</button>
+</div>
+
+<div class="wrapper">
+  <table id="tracker"></table>
+</div>
+
+<script>
+const TOTAL_DAYS = 90; // next 3 months
+let habits = JSON.parse(localStorage.getItem("habits")) || [];
+
+function save() {
+  localStorage.setItem("habits", JSON.stringify(habits));
+}
+
+function getDates() {
+  const dates = [];
+  const start = new Date();
+  for (let i = 0; i < TOTAL_DAYS; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    dates.push(d.toISOString().split("T")[0]);
+  }
+  return dates;
+}
+
+const dates = getDates();
+
+function addHabit() {
+  const name = habitInput.value.trim();
+  if (!name) return;
+  habits.push({ name, days: {} });
+  habitInput.value = "";
+  save();
+  render();
+}
+
+function toggle(habitIndex, date) {
+  habits[habitIndex].days[date] = !habits[habitIndex].days[date];
+  save();
+  render();
+}
+
+function render() {
+  const table = document.getElementById("tracker");
+  table.innerHTML = "";
+
+  /* HEADER ROW */
+  const header = document.createElement("tr");
+  header.innerHTML =
+    `<th class="date-col">Date</th>` +
+    habits.map(h => `<th>${h.name}</th>`).join("");
+  table.appendChild(header);
+
+  /* DATE ROWS */
+  dates.forEach(date => {
+    const tr = document.createElement("tr");
+
+    const dateTd = document.createElement("td");
+    dateTd.className = "date-col";
+    dateTd.textContent =
+      date.slice(8, 10) + " / " + date.slice(5, 7);
+    tr.appendChild(dateTd);
+
+    habits.forEach((h, i) => {
+      const td = document.createElement("td");
+      td.className = "cell" + (h.days[date] ? " done" : "");
+      td.textContent = h.days[date] ? "✔" : "";
+      td.onclick = () => toggle(i, date);
+      tr.appendChild(td);
+    });
+
+    table.appendChild(tr);
+  });
+}
+
+render();
+</script>
+
+</body>
+</html>
