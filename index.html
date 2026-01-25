@@ -47,7 +47,7 @@ button {
   cursor: pointer;
 }
 
-/* TABLE LAYOUT */
+/* TABLE */
 .wrapper {
   overflow-x: auto;
 }
@@ -79,7 +79,7 @@ th {
   z-index: 3;
   font-weight: bold;
   font-size: 15px;
-  min-width: 80px;
+  min-width: 90px;
 }
 
 .cell {
@@ -95,16 +95,10 @@ th {
   color: black;
 }
 
-/* MOBILE BOOST */
+/* MOBILE OPTIMIZATION */
 @media (max-width: 768px) {
-
-  body {
-    padding: 12px;
-  }
-
-  h1 {
-    font-size: 22px;
-  }
+  body { padding: 12px; }
+  h1 { font-size: 22px; }
 
   .controls {
     flex-direction: column;
@@ -115,18 +109,9 @@ th {
     padding: 16px;
   }
 
-  th {
-    font-size: 16px;
-    padding: 12px 8px;
-  }
-
-  td {
-    padding: 14px 10px;
-  }
-
   .date-col {
     font-size: 16px;
-    min-width: 90px;
+    min-width: 100px;
   }
 
   .cell {
@@ -152,19 +137,22 @@ th {
 </div>
 
 <script>
+/* ===== FIXED DATE CONFIG ===== */
+const START_DATE = new Date(2026, 0, 24); // 24 Jan 2026 (month is 0-based)
 const TOTAL_DAYS = 90; // next 3 months
+
 let habits = JSON.parse(localStorage.getItem("habits")) || [];
 
+/* ===== UTILITIES ===== */
 function save() {
   localStorage.setItem("habits", JSON.stringify(habits));
 }
 
 function getDates() {
   const dates = [];
-  const start = new Date();
   for (let i = 0; i < TOTAL_DAYS; i++) {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
+    const d = new Date(START_DATE);
+    d.setDate(START_DATE.getDate() + i);
     dates.push(d.toISOString().split("T")[0]);
   }
   return dates;
@@ -172,6 +160,7 @@ function getDates() {
 
 const dates = getDates();
 
+/* ===== HABIT LOGIC ===== */
 function addHabit() {
   const name = habitInput.value.trim();
   if (!name) return;
@@ -187,25 +176,26 @@ function toggle(habitIndex, date) {
   render();
 }
 
+/* ===== RENDER ===== */
 function render() {
   const table = document.getElementById("tracker");
   table.innerHTML = "";
 
-  /* HEADER ROW */
+  /* HEADER */
   const header = document.createElement("tr");
   header.innerHTML =
     `<th class="date-col">Date</th>` +
     habits.map(h => `<th>${h.name}</th>`).join("");
   table.appendChild(header);
 
-  /* DATE ROWS */
+  /* BODY */
   dates.forEach(date => {
     const tr = document.createElement("tr");
 
     const dateTd = document.createElement("td");
     dateTd.className = "date-col";
     dateTd.textContent =
-      date.slice(8, 10) + " / " + date.slice(5, 7);
+      date.slice(8, 10) + "/" + date.slice(5, 7);
     tr.appendChild(dateTd);
 
     habits.forEach((h, i) => {
@@ -225,4 +215,3 @@ render();
 
 </body>
 </html>
-
